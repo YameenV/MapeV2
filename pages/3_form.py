@@ -3,17 +3,36 @@ from helper import defaultConfig
 from logging import PlaceHolder
 from unicodedata import category
 from PIL import Image
+import csv
+from db import loadDb, addUser
+import csv
 
 defaultConfig()
 
 img = Image.open("./media/UCoE-Web-Logo.png")
 st.image(img)
 st.title('Form Filling')
+
+with open('./userdata/data.csv', mode='r') as csv_file:
+    reader = csv.reader(csv_file)
+    data = next(reader)  # Read data row
+    filename, aadhar_number, name, date_of_birth, address = data
+
+print(f"Filename: {filename}")
+print(f"Aadhar Number: {aadhar_number}")
+print(f"Name: {name}")
+print(f"Date of Birth: {date_of_birth}")
+print(f"Address: {address}")
+
+
+
 # personal
 tab1, tab2, tab3, tab4 = st.tabs(["Personal", "Mother", "Father", "Marks"])
 with tab1:
     #personal
-    name = st.text_input("Name", placeholder="Name")
+    if filename:
+        st.image(filename)
+    name = st.text_input("Name", name)
     col1, col2 = st.columns(2)
     with col1:
         option = st.selectbox(
@@ -44,8 +63,8 @@ with tab1:
         Sub_caste = st.text_input("Sub Caste", placeholder="Sub Caste")
     col1, col2 = st.columns(2)
     with col1:
-        date = st.date_input(
-            "When's your birthday",)
+        date = st.text_input(
+            "When's your birthday",date_of_birth)
     with col2:
         date_words = st.text_input("In Words", placeholder="In Words")
     col1, col2, col3 = st.columns(3)
@@ -58,8 +77,8 @@ with tab1:
         )
     with col3:
         Domicile = st.text_input("Domicile")
-    aadhar_no = st.text_input("Adhar Card Number")
-    permanant_add = st.text_input("Permanent Address")
+    aadhar_no = st.text_input("Adhar Card Number",aadhar_number)
+    permanant_add = st.text_input("Permanent Address", address)
     col1, col2 = st.columns(2)
     with col1:
         mobile = st.text_input("Mobile Number")
@@ -148,4 +167,16 @@ with tab4:
         maths_cet = st.text_input("Mathematics", key=15)
         total_cet = st.text_input("Total PCM", key=16)
         year_cet = st.text_input("Exam", key=17)
-st.button("Submit")
+
+submit = st.button("Submit")
+
+if submit:
+    with open('./userdata/data.csv', mode='r') as csv_file:
+        reader = csv.reader(csv_file)
+        data = next(reader)  # Read data row
+        filename, aadhar_number, name, date_of_birth, address = data
+
+        db = loadDb()     
+        addUser(db, name, aadhar_number, date_of_birth, address)
+
+        st.success("Database updated sucessfully")
